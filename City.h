@@ -130,5 +130,62 @@ void initialize(int N) {
     cout << "Bus added with ID: " << buses.size() - 1 << ". Minimum time required for the bus to reach from " << A << " to " << B << ": " << min_time << " minutes" << endl;
   }
 
+void construct_street(const string& A, const string& B, int duration) {
+    if(crossroads.find(A) != crossroads.end() && crossroads.find(B) != crossroads.end()) {
+        if(dist[station_indices[A]][station_indices[B]] >= duration){
+            int src = get_station_index(A);
+            int dest = get_station_index(B);
+            dist[src][dest] = duration;
+            dist[dest][src] = duration;
+          //change duration in the list
+            for(auto& edge : adjacency_list[A]){
+                if(edge.first == B){
+                    edge.second = duration;
+                    break;
+                }
+            }
+            for(auto& edge : adjacency_list[B]){
+                if(edge.first == A){
+                    edge.second = duration;
+                    break;
+                }
+            }
+        }
+    }
+    else {
+        cout << "Invalid crossroad(s)" << endl;
+        return;
+    }
+    cout << "Street constructed between " << A << " and " << B << " with duration " << duration << " minutes." << endl;
+    cout << "Minimum durations for all buses after constructing street:" << endl;
+    floyd_warshall_update(station_indices.size(), A, B, duration);
+
+    for (auto& bus : buses) {
+        auto start = bus.second.first;
+        auto destination = bus.second.second;
+        int busID = bus.first;
+        int new_duration = min_time_required(start, destination);
+        cout << "Bus ID: " << busID << ", Updated Duration: " << new_duration << " minutes" << endl;
+    }
+  }
+
+void floyd_warshall_update(int num_vertices, const string& A, const string& B, int duration) {
+    int u = station_indices[A];
+    int v = station_indices[B];
+    dist[u][v] = duration;
+    dist[v][u] = duration;
+
+    for (int i = 0; i < num_vertices; ++i) {
+        if (dist[u][i] != INF && dist[i][v] != INF) {
+            dist[u][i] = min(dist[u][i], duration + dist[v][i]);
+            dist[i][u] = dist[u][i]; 
+        }
+        if (dist[v][i] != INF && dist[i][u] != INF) {
+            dist[v][i] = min(dist[v][i], duration + dist[u][i]);
+            dist[i][v] = dist[v][i]; 
+        }
+    }
+  }
+
 };
 #endif //SIMPLE_CITY_CITY_H
