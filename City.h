@@ -130,7 +130,7 @@ void initialize(int N) {
     cout << "Bus added with ID: " << buses.size() - 1 << ". Minimum time required for the bus to reach from " << A << " to " << B << ": " << min_time << " minutes" << endl;
   }
 
-void construct_street(const string& A, const string& B, int duration) {
+  void construct_street(const string& A, const string& B, int duration) {
     if(crossroads.find(A) != crossroads.end() && crossroads.find(B) != crossroads.end()) {
         if(dist[station_indices[A]][station_indices[B]] >= duration){
             int src = get_station_index(A);
@@ -169,7 +169,7 @@ void construct_street(const string& A, const string& B, int duration) {
     }
   }
 
-void floyd_warshall_update(int num_vertices, const string& A, const string& B, int duration) {
+  void floyd_warshall_update(int num_vertices, const string& A, const string& B, int duration) {
     int u = station_indices[A];
     int v = station_indices[B];
     dist[u][v] = duration;
@@ -185,6 +185,67 @@ void floyd_warshall_update(int num_vertices, const string& A, const string& B, i
             dist[i][v] = dist[v][i]; 
         }
     }
+  }
+
+  void details(int bus_ID) {
+    if (buses.find(bus_ID) != buses.end()) {
+        auto start = buses[bus_ID].first;
+        auto destination = buses[bus_ID].second;
+        vector<vector<string>> shortest_paths = all_shortest_paths(start, destination);
+
+        if (shortest_paths.empty()) {
+            cout << "No shortest path found between " << start << " and " << destination << endl;
+        } 
+        else {
+            cout << "Shortest path(s) between " << start << " and " << destination << ":" << endl;
+            for (const auto& path : shortest_paths) {
+                for (const auto& node : path) {
+                    cout << node << " ";
+                }
+                cout << endl;
+            }
+        }
+    } 
+    else {
+        cout << "Bus ID not found!" << endl;
+    }
+  }
+
+  vector<vector<string>> all_shortest_paths(const string& start, const string& end) {
+    vector<vector<string>> shortest_paths;
+    int shortest_distance = INF; 
+    queue<pair<vector<string>, int>> q;
+    vector<string> initial_path;
+    initial_path.push_back(start);
+    q.push({initial_path, 0});
+
+    while (!q.empty()) {
+        auto current = q.front();
+        q.pop();
+        string last = current.first.back();
+        int current_distance = current.second;
+
+        if (last == end) {
+            if (current_distance < shortest_distance) {
+                shortest_distance = current_distance;
+                shortest_paths.clear();
+                shortest_paths.push_back(current.first);
+            } 
+            else if (current_distance == shortest_distance) {
+                  shortest_paths.push_back(current.first);
+            }
+        } 
+        else {
+            for (const auto& neighbor : adjacency_list[last]) {
+                if (find(current.first.begin(), current.first.end(), neighbor.first) == current.first.end()) {
+                    vector<string> new_path(current.first);
+                    new_path.push_back(neighbor.first);
+                    q.push({new_path, current_distance + neighbor.second});
+                }
+            }
+        }
+    }
+    return shortest_paths;
   }
 
 };
