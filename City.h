@@ -110,5 +110,25 @@ void initialize(int N) {
     }
   }
 
+  int min_time_required(const string& src, const string& dest) {
+    int u = station_indices[src];
+    int v = station_indices[dest];
+    return dist[u][v];
+  }
+
+  void add_bus(const string& A, const string& B) {
+    if(crossroads.find(A) == crossroads.end() || crossroads.find(B) == crossroads.end()) {
+        cout << "invalid stations" << endl;
+        return;
+    }
+    int min_time =  min_time_required(A, B);
+    if(min_time == INF) {
+        cout << "No connection" << endl;
+        return ;
+    }
+    buses[buses.size()] = {A, B};
+    cout << "Bus added with ID: " << buses.size() - 1 << ". Minimum time required for the bus to reach from " << A << " to " << B << ": " << min_time << " minutes" << endl;
+  }
+
 };
 #endif //SIMPLE_CITY_CITY_H
